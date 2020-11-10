@@ -1,6 +1,3 @@
-import linecache
-
-
 def get_strings(file_name):
     list = []  # create empty list
     with open(file_name, 'r') as f:
@@ -9,27 +6,18 @@ def get_strings(file_name):
         f.close()
         return list
 
-
 list1 = get_strings('./file1.txt')
 list2 = get_strings('./file2.txt')
-
-counter = 0
-with open('./output.txt', 'w') as f:
-    for i in list1:
-        string = i.rstrip("\n")
-        if i in list2 and counter == 0:  # when first match
-            counter += 1
-            list2.remove(i)
-            f.write(string + '\n')
-        elif i in list2:  # match
-            f.write(string + '\n')
-            list2.remove(i)
-            counter += 1
-        else:  # not a match at all
-            if counter == 1:
-                f.write('\n')
-
+len = len(list2)
+count = 0
+with open('output.txt','w') as f:
+    f.write('\n\n')
     for i in list2:
-        i=i.rstrip('\n')
-        f.write(i+' <mismatched>')
-    f.close()
+        count += 1
+        if i in list1:
+           f.write(i)
+        else:
+            if count == len:
+                f.write(i.rstrip('\n') + '< Mismatched>')
+            else:
+                f.write(i.rstrip('\n') + '< Mismatched>'+ '\n\n\n')
