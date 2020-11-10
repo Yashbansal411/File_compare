@@ -1,33 +1,35 @@
 import linecache
 
-def file_line_counter(file_path):
-    count = 0
-    with open(file_path,'r') as f:
+
+def get_strings(file_name):
+    list = []  # create empty list
+    with open(file_name, 'r') as f:
         for line in f:
-            count += 1
-    f.close()
-    return count
+            list.append(line)
+        f.close()
+        return list
 
 
-no_of_lines_file1 = file_line_counter('./file1.txt')
-no_of_lines_file2 = file_line_counter('./file2.txt')
+list1 = get_strings('./file1.txt')
+list2 = get_strings('./file2.txt')
 
-diff_in_line = (no_of_lines_file1-no_of_lines_file2)
+counter = 0
+with open('./output.txt', 'w') as f:
+    for i in list1:
+        string = i.rstrip("\n")
+        if i in list2 and counter == 0:  # when first match
+            counter += 1
+            list2.remove(i)
+            f.write(string + '\n')
+        elif i in list2:  # match
+            f.write(string + '\n')
+            list2.remove(i)
+            counter += 1
+        else:  # not a match at all
+            if counter == 1:
+                f.write('\n')
 
-
-with open('./output.txt','w') as f:
-    diff = diff_in_line
-    while(diff):
-        f.write('<None>\n')
-        diff -= 1
-    f.close()
-
-with open('./output.txt','a') as f:
-    for i in range(1,no_of_lines_file2+1):
-        string1 = linecache.getline('./file1.txt',(diff_in_line+i)).rstrip("\n")
-        string2 = linecache.getline('./file2.txt',i).rstrip("\n")
-        if string1 == string2:
-            f.write(string1+'\n')
-        else :
-            f.write(string2+' <mismatch>'+'\n')
+    for i in list2:
+        i=i.rstrip('\n')
+        f.write(i+' <mismatched>')
     f.close()
