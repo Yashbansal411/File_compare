@@ -10,11 +10,14 @@ def myBinarySearch(list1, i):
     low = 0
     high = len(list1)-1
     first_occurrence = -1
+    lowest_match_index = -1
     while(low <= high):
         mid = low + int((high-low)/2)
         if(list1[mid]['raw_log_time']==i['raw_log_time']): # if raw_log_time is same
             if(list1[mid]==i): #dict are exactly same
-                return mid
+                first_occurrence = mid
+                lowest_match_index = mid
+                high = mid - 1
             else: #find the first occurence where we go the same raw_log_time
                 first_occurrence = mid
                 high = mid - 1
@@ -23,7 +26,7 @@ def myBinarySearch(list1, i):
                 high = mid - 1
             else:
                 low = mid + 1
-    return first_occurrence # either it return -1 or an integer which is the index of list where
+    return first_occurrence if first_occurrence == -1 else lowest_match_index
 
 
 def processMisMatch(list2,list3,list2Index,i,lastAppend):
@@ -78,17 +81,18 @@ def mainFunc(list1, list2):
     return list3
 
 def listToFile(list3):
-    with open('ActualLogs_inputs_/output(same_raw_log_time).txt','w') as f:
+    with open('ActualLogs_inputs_/output(duplicates).txt','w') as f:
         for i in list3:
             i = str(i)
             i = i.replace(" ","")
-            i = i+'\n'
+            if i != '\n':
+                i = i+'\n'
             f.write(i)
         f.close()
 
 
-list1 = inputToList('ActualLogs_inputs_/file1_actual_logs(same_raw_log_time).txt')
-list2 = inputToList('ActualLogs_inputs_/file2_actual_logs(same_raw_log_time).txt')
+list1 = inputToList("ActualLogs_inputs_/file1_actual_logs(duplicates).txt")
+list2 = inputToList('ActualLogs_inputs_/file2_actual_logs(duplicates).txt')
 #sorted_list=sorted(l,key=lambda i:i["raw_log_time"])
 sorted_list1 = sorted(list1, key=itemgetter('raw_log_time'))
 list3 = mainFunc(sorted_list1, list2)
