@@ -10,23 +10,17 @@ def myBinarySearch(list1, i):
     low = 0
     high = len(list1)-1
     first_occurrence = -1
-    lowest_match_index = -1
     while(low <= high):
         mid = low + int((high-low)/2)
         if(list1[mid]['raw_log_time']==i['raw_log_time']): # if raw_log_time is same
-            if(list1[mid]==i): #dict are exactly same
-                first_occurrence = mid
-                lowest_match_index = mid
-                high = mid - 1
-            else: #find the first occurence where we go the same raw_log_time
-                first_occurrence = mid
-                high = mid - 1
+             first_occurrence = mid
+             high = mid - 1
         else:
             if(list1[mid]['raw_log_time']>i['raw_log_time']):
                 high = mid - 1
             else:
                 low = mid + 1
-    return first_occurrence if first_occurrence == -1 else lowest_match_index
+    return first_occurrence
 
 
 def processMisMatch(list2,list3,list2Index,i,lastAppend):
@@ -45,6 +39,7 @@ def processMisMatch(list2,list3,list2Index,i,lastAppend):
         lastAppend += 1
     return lastAppend
 
+
 def mainFunc(list1, list2):
     list3 = ['\n']*len(list1)
     list2Index = 0
@@ -54,15 +49,9 @@ def mainFunc(list1, list2):
         if index == -1: #check that index is valid or not, if index = -1 then there is no match for for raw-log_time.
             lastAppend=processMisMatch(list2, list3, list2Index, i, lastAppend)
 
-
-        else: #either we got first occurrence or the exact match
-            if list1[index] == i:      #if it is the exact match when Binary search function returns mid
-                list3[index] = i       #put the dict to correct location.
-                lastAppend = index     #track the last appended index
-                list1[index]['id'] = "processed"
-            else: #we got the index of first occurrence of same "raw_log_time".
-                indexFound = False #initiall we assume that we don't get the exact match
-                while(index<len(list1)): #apply linear search and find the exact dict
+        else: #either we got first occurrence or the exact matc
+            indexFound = False #initiall we assume that we don't get the exact match
+            while(index<len(list1)): #apply linear search and find the exact dict
                     if(list1[index]['raw_log_time']!=i['raw_log_time']):#if we didn't get the same time that means form now onward there is no chance to get exact same dict
                         break
                     else:
@@ -70,18 +59,19 @@ def mainFunc(list1, list2):
                             list3[index] = i
                             lastAppend = index
                             indexFound = True
+                            list1[index]['id'] = 'processed'
                             break
                         else:
                             index += 1
 
-                if(indexFound==False): #if indexfound is still false that means there is no exact match so we need to process the mismatch
+            if(indexFound==False): #if indexfound is still false that means there is no exact match so we need to process the mismatch
                     lastAppend = processMisMatch(list2, list3, list2Index, i, lastAppend)
 
         list2Index += 1
     return list3
 
 def listToFile(list3):
-    with open('ActualLogs_inputs_/output(duplicates).txt','w') as f:
+    with open('output_50L.txt','w') as f:
         for i in list3:
             i = str(i)
             i = i.replace(" ","")
@@ -91,8 +81,8 @@ def listToFile(list3):
         f.close()
 
 
-list1 = inputToList("ActualLogs_inputs_/file1_actual_logs(duplicates).txt")
-list2 = inputToList('ActualLogs_inputs_/file2_actual_logs(duplicates).txt')
+list1 = inputToList("file1_50L.txt")
+list2 = inputToList('file2_50L.txt')
 #sorted_list=sorted(l,key=lambda i:i["raw_log_time"])
 sorted_list1 = sorted(list1, key=itemgetter('raw_log_time'))
 list3 = mainFunc(sorted_list1, list2)
