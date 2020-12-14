@@ -1,5 +1,6 @@
 import json
 from operator import itemgetter
+import time
 def inputToList(name):
     with open(name) as f:
         l = []
@@ -32,11 +33,22 @@ def processMisMatch(list2,list3,list2Index,i,lastAppend):
             list3.append(str(i) + '<mismatch>')
 
     else:
-        try:
+        """try:
             list3[lastAppend + 1] = str(i) + '<mismatch>'
         except IndexError:
             list3.append(str(i) + '<mismatch>')
-        lastAppend += 1
+        lastAppend += 1"""
+        while(True):
+            if lastAppend == (len(list3)-1):
+                list3.append(str(i) + '<mismatch>')
+                lastAppend += 1
+                break
+            if list3[lastAppend+1] == '\n':
+                list3[lastAppend + 1] = str(i) + '<mismatch>'
+                lastAppend += 1
+                break
+            lastAppend += 1
+
     return lastAppend
 
 
@@ -68,10 +80,11 @@ def mainFunc(list1, list2):
                     lastAppend = processMisMatch(list2, list3, list2Index, i, lastAppend)
 
         list2Index += 1
+        print(list2Index)
     return list3
 
 def listToFile(list3):
-    with open('output_50L.txt','w') as f:
+    with open('output_100L.txt','w') as f:
         for i in list3:
             i = str(i)
             i = i.replace(" ","")
@@ -81,9 +94,13 @@ def listToFile(list3):
         f.close()
 
 
-list1 = inputToList("file1_50L.txt")
-list2 = inputToList('file2_50L.txt')
+start_time = time.time()
+list1 = inputToList("file1_100L.txt")
+list2 = inputToList('file2_100L.txt')
 #sorted_list=sorted(l,key=lambda i:i["raw_log_time"])
 sorted_list1 = sorted(list1, key=itemgetter('raw_log_time'))
 list3 = mainFunc(sorted_list1, list2)
 listToFile(list3)
+end_time = time.time()
+time_of_execution = end_time-start_time
+print(time_of_execution)
