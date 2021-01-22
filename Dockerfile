@@ -2,11 +2,11 @@ FROM python:3.8
 
 WORKDIR /app
 
-COPY . /app
+COPY ["file_compare.py", "flask_file_compare.py", "requirements.txt", "/app/"]
 
-RUN pip install flask
+RUN pip3 install -r ./requirements.txt
 
-EXPOSE 8080
+EXPOSE 5000
 
 ENTRYPOINT ["python3"]
 
