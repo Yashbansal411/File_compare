@@ -1,5 +1,8 @@
-import pandas as pd, numpy as np, time, cProfile
+import pandas as pd
+import numpy as np
+import os
 import json
+total_threads = 0
 
 def read_input(file1_address, file2_address):
     df1_from_txt = pd.read_csv(file1_address, header=None, delimiter=":")
@@ -78,8 +81,6 @@ def adjust_mismatch(list2, list3, list2Index, second, lastAppend):
 def list_to_file(list3,code):
     with open('output_files/'+code+'.txt','w') as f:
         for i in list3:
-            #i = i.replace('}}-', '}}')
-            #i = i.replace('}-}', '}}')
             i = i.replace('\n', '')
             i = i.replace('[', '')
             i = i.replace(']', '')
@@ -90,13 +91,36 @@ def list_to_file(list3,code):
                 i = i+'\n'
             f.write(i)
 
-def main_code(file1_address, file2_address):
+
+def persist_file_length(list3, code):
+    total_number_of_lines = len(list3)
+    with open("number_of_lines.txt") as f:
+        ans = ''
+        for i in f:
+            ans = ans + str(i)
+        if os.stat("number_of_lines.txt").st_size == 0:
+            js = {}
+            js[code] = total_number_of_lines
+        else:
+            js = json.loads(ans)
+            js[str(code)] = total_number_of_lines
+    f = open("number_of_lines.txt", 'w')
+    f.write(str(js).replace("'", '"'))
+    f.close()
+
+
+def main_code(file1_address, file2_address,code):
+    global total_threads
+    total_threads += 1
     narr1, narr2 = read_input(file1_address, file2_address)
-    narr1_time = narr1[:,23]
-    narr2_time = narr2[:,23]
-    narr1 = np.delete(narr1, np.s_[23:26],1)
+    narr1_time = narr1[:, 23]
+    narr2_time = narr2[:, 23]
+    narr1 = np.delete(narr1, np.s_[23:26], 1)
     narr2 = np.delete(narr2, np.s_[23:26], 1)
     narr1 = narr1.tolist()
     narr2 = narr2.tolist()
-    list3 = core_logic(narr1,narr1_time,narr2, narr2_time)
-    return list3
+    list3 = core_logic(narr1,narr1_time, narr2, narr2_time)
+    list_to_file(list3, code)
+    persist_file_length(list3, code)
+    total_threads -= 1
+
