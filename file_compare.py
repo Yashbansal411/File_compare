@@ -4,11 +4,15 @@ import os
 import json
 total_threads = 0
 
+
 def read_input(file1_address, file2_address):
     df1_from_txt = pd.read_csv(file1_address, header=None, delimiter=":")
     df2_from_txt = pd.read_csv(file2_address, header=None, delimiter=":")
-    df1_from_txt[["time", "raw"]] = df1_from_txt[6].str.split(',', expand=True)
-    df2_from_txt[["time", "raw"]] = df1_from_txt[6].str.split(',', expand=True)
+    try:
+        df1_from_txt[["time", "raw"]] = df1_from_txt[6].str.split(',', expand=True)
+        df2_from_txt[["time", "raw"]] = df1_from_txt[6].str.split(',', expand=True)
+    except KeyError:
+        return "inputs are not in proper format"
     ans1 = df1_from_txt.astype(dtype='int32', errors='ignore')
     del (df1_from_txt)
     ans2 = df2_from_txt.astype(dtype='int32', errors='ignore')
@@ -36,7 +40,7 @@ def core_logic(list1,list1_time,list2, list2_time):
             else:
                 if list1_time[first] > list1_time[first_occur]:
                     first_occur = first
-                if(list1[first] == list2[list2_index]):                                    #np.array_equal(list1[first],second):
+                if(str(list1[first]).replace(' ','') == str(list2[list2_index]).replace(' ', '')):                                    #np.array_equal(list1[first],second):
                     ans_str = str(list1[first])
                     list3[first] = ans_str
                     second_unprocessed = False
@@ -79,6 +83,8 @@ def adjust_mismatch(list2, list3, list2Index, second, lastAppend):
 
 
 def list_to_file(list3,code):
+    if not os.path.isdir('./output_files'):
+        os.mkdir('./output_files')
     with open('output_files/'+code+'.txt','w') as f:
         for i in list3:
             i = i.replace('\n', '')
