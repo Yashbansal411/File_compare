@@ -18,10 +18,21 @@ logger = logging.getLogger()
 
 @application.route('/paginate/')
 def paginate():
-    body_input = json.loads(request.data.decode())
+    request_body = request.data.decode()
+    if request_body == '':
+        logging.warning("please enter the input in body, body is empty")
+        return Response("please enter the input in body, body is empty", status = 500)
+    try:
+        body_input = json.loads(request_body)
+    except ValueError:
+        logging.warning("input not in proper format, input must be a json")
+        return Response("input not in proper format, input must be a json", status=500)
     if body_input == {}:
         logging.warning("Please enter token and page number")
         return Response("Please enter token and page number", status=500)
+    if "token" and "page_number" not in body_input:
+        logging.warning("please enter token and page_number")
+        return Response("please enter token and page_number", status=500)
     if "token" not in body_input:
         logging.warning("Please enter token")
         return Response("Please enter token", status=500)
@@ -43,18 +54,15 @@ def paginate():
         for i in f:
             ans = ans + i
         dictionary = json.loads(ans)
-    global total_number_of_lines    
+    global total_number_of_lines
     total_number_of_lines = dictionary[code]
     if total_number_of_lines % per_page == 0:
         total_number_of_pages = int(total_number_of_lines/per_page) - 1
     else:
         total_number_of_pages = int(math.floor(total_number_of_lines/per_page))
     if num > total_number_of_pages:
-        logging.warning("total number of pages are "+str(total_number_of_pages))
-        return Response("total number of pages are "+str(total_number_of_pages), status=500)
-    if num < 0:
-        logging.warning("page number must be non-negative")
-        return Response("page number must be non-negative", status=500)
+        logging.warning("total number of pages is "+str(total_number_of_pages))
+        return Response("total number of pages is "+str(total_number_of_pages), status=500)
     start_page = num * per_page
     output = []
     for i in range(per_page):
@@ -78,10 +86,21 @@ def paginate():
 @application.route('/file_compare/', methods=['POST'])
 def file_comp():
     code = secrets.token_hex(5)
-    body_data = json.loads(request.data.decode())
+    request_body = request.data.decode()
+    if request_body == '':
+        logging.warning("please enter the input in body, body is empty")
+        return Response("please enter the input in body, body is empty", status=500)
+    try:
+        body_data = json.loads(request_body)
+    except ValueError:
+        logging.warning("input not in proper format, input must be a json")
+        return Response("input not in proper format, input must be a json", status=500)
     if body_data == {}:
-        logging.warning("both file addresses are missing")
-        return Response("both file addresses are missing", status=500)
+        logging.warning("both file addresses are missing please enter file1_address and file2_address")
+        return Response("both file addresses are missing please enter file1_address and file2_address", status=500)
+    if "file1_address" not in body_data  and "file2_address" not in body_data:
+        logging.warning("please enter file1_address and file2_address")
+        return Response("please enter file1_address and file2_address", status=500)
     if "file1_address" not in body_data:
         logging.warning("file1 address is missing")
         return Response("file1 address is missing", status=500)
@@ -112,4 +131,3 @@ def file_comp():
 
 if __name__ == "__main__":
     application.run(debug=True, host='0.0.0.0', port=5000)
-
