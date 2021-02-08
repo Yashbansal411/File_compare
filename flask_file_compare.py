@@ -16,12 +16,13 @@ logging.basicConfig(filename='./log_file.log', level=logging.INFO, format=log_fo
 logger = logging.getLogger()
 
 
+
 @application.route('/paginate/')
 def paginate():
     request_body = request.data.decode()
     if request_body == '':
-        logging.warning("please enter the input in body, body is empty")
-        return Response("please enter the input in body, body is empty", status = 500)
+        logging.warning("please enter the input  body, body is empty")
+        return Response("please enter the input  body, body is empty", status = 500)
     try:
         body_input = json.loads(request_body)
     except ValueError:
@@ -30,7 +31,7 @@ def paginate():
     if body_input == {}:
         logging.warning("Please enter token and page number")
         return Response("Please enter token and page number", status=500)
-    if "token" and "page_number" not in body_input:
+    if "token" not in body_input and "page_number" not in body_input:
         logging.warning("please enter token and page_number")
         return Response("please enter token and page_number", status=500)
     if "token" not in body_input:
@@ -66,21 +67,13 @@ def paginate():
     start_page = num * per_page
     output = []
     for i in range(per_page):
-        output.append(getline('output_files/' + code + '.txt', start_page + 1))
+        value = getline('output_files/' + code + '.txt', start_page + 1)
         start_page += 1
-    result = []
-    for _ in output:
-        if '<mismatch>' in _:
-            sp = _.split('<')
-            _ = sp[0]
-            _ = json.loads(_)
-            _ = (str(_) + '<mismatch>').replace(' ', '')
-        elif '{' in _:
-            _ = str(json.loads(_)).replace(" ", "")
-        if _ == '':
+        if value == '':
             continue
-        result.append(_)
-    return {'output': result}
+        else:
+            output.append(value)
+    return {'output': output}
 
 
 @application.route('/file_compare/', methods=['POST'])
@@ -88,8 +81,8 @@ def file_comp():
     code = secrets.token_hex(5)
     request_body = request.data.decode()
     if request_body == '':
-        logging.warning("please enter the input in body, body is empty")
-        return Response("please enter the input in body, body is empty", status=500)
+        logging.warning("please enter the input body, body is empty")
+        return Response("please enter the input body, body is empty", status=500)
     try:
         body_data = json.loads(request_body)
     except ValueError:

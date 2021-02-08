@@ -1,54 +1,44 @@
 import pandas as pd
-import numpy as np
 import os
 import json
+from operator import itemgetter
 total_threads = 0
 
 
-def read_input(file1_address, file2_address):
-    df1_from_txt = pd.read_csv(file1_address, header=None, delimiter=":")
-    df2_from_txt = pd.read_csv(file2_address, header=None, delimiter=":")
+def read_input(file_address):
+    df1 = pd.read_json(file_address, orient='records', lines=True, chunksize=10000)
     try:
-        df1_from_txt[["time", "raw"]] = df1_from_txt[6].str.split(',', expand=True)
-        df2_from_txt[["time", "raw"]] = df1_from_txt[6].str.split(',', expand=True)
-    except KeyError:
-        return "inputs are not in proper format"
-    ans1 = df1_from_txt.astype(dtype='int32', errors='ignore')
-    del (df1_from_txt)
-    ans2 = df2_from_txt.astype(dtype='int32', errors='ignore')
-    del(df2_from_txt)
-    ans1.sort_values(by='time', inplace=True)
-    narr1 = ans1.to_numpy()
-    del (ans1)
-    ans2.sort_values(by='time', inplace=True)
-    narr2 = ans2.to_numpy()
-    del (ans2)
-    return narr1, narr2
+        input1 = df1.read()
+    except ValueError:
+        #inputs not in proper format
+        return -1
+    dict1 = input1.to_dict('records')
+    del input1
+    return dict1
 
 
-def core_logic(list1,list1_time,list2, list2_time):
-    list3 = ['\n']*len(list1)
+def core_logic(list1, list2):
+    list3 = ['\n'] * len(list1)
     list1_len = len(list1)
     first_occur = 0
     list2_index = 0
     last_append = 0
-    for second in list2_time:
+    for second in list2:
         second_unprocessed = True
         for first in range(first_occur, list1_len):
-            if second < list1_time[first]:
+            if second["raw_log_time"] < list1[first]["raw_log_time"]:
                 break
             else:
-                if list1_time[first] > list1_time[first_occur]:
+                if list1[first]["raw_log_time"] > list1[first_occur]["raw_log_time"]:
                     first_occur = first
-                if(str(list1[first]).replace(' ','') == str(list2[list2_index]).replace(' ', '')):                                    #np.array_equal(list1[first],second):
-                    ans_str = str(list1[first])
-                    list3[first] = ans_str
+                if list1[first] == second:
+                    list3[first] = second
                     second_unprocessed = False
                     last_append = first
-                    list1[first][0] = "processed"
+                    list1[first]["id"] = "processed"
                     break
         if second_unprocessed:
-            adjust_mismatch(list2, list3, list2_index, list2[list2_index], last_append)
+            adjust_mismatch(list2, list3, list2_index, second, last_append)
         list2_index += 1
         print(list2_index)
     return list3
@@ -61,20 +51,17 @@ def adjust_mismatch(list2, list3, list2Index, second, lastAppend):
             ans_str = str(second)
             list3[len(list3) - 1] = ans_str + '<mismatch>'
         else:
-            #ans = np.delete(second, np.s_[23:26])
             ans_str = str(second)
             list3.append(ans_str + '<mismatch>')
 
     else:
         while(True):
             if lastAppend == (len(list3)-1):
-                #ans = np.delete(second, np.s_[23:26])
                 ans_str = str(second)
                 list3.append(ans_str + '<mismatch>')
                 lastAppend += 1
                 break
             if list3[lastAppend] == '\n':
-                #ans = np.delete(second, np.s_[23:26])
                 ans_str = str(second)
                 list3[lastAppend] = ans_str + '<mismatch>'
                 lastAppend += 1
@@ -82,30 +69,33 @@ def adjust_mismatch(list2, list3, list2Index, second, lastAppend):
             lastAppend += 1
 
 
-def list_to_file(list3,code):
+def list_to_file(list3, code):
     if not os.path.isdir('./output_files'):
         os.mkdir('./output_files')
-    with open('output_files/'+code+'.txt','w') as f:
-        for i in list3:
-            i = i.replace('\n', '')
-            i = i.replace('[', '')
-            i = i.replace(']', '')
-            i = i.replace("\'", '')
-            i = i.replace(",  ", ":")
-            i = i.replace(" ", "")
-            if i != '\n':
-                i = i+'\n'
-            f.write(i)
+    if list3 == -1:
+        f = open('output_files/'+code+'.txt', 'w')
+        f.write("inputs were wrong, inputs must be in proper json format")
+    else:
+        with open('output_files/'+code+'.txt','w') as f:
+            for i in list3:
+                i = str(i)
+                i = i.replace(" ", "")
+                if i != '\n':
+                    i = i+'\n'
+                f.write(i)
 
 
 def persist_file_length(list3, code):
-    total_number_of_lines = len(list3)
+    if list3 == -1:
+        total_number_of_lines = 1
+    else:
+        total_number_of_lines = len(list3)
     with open("number_of_lines.txt") as f:
         ans = ''
         for i in f:
             ans = ans + str(i)
         if os.stat("number_of_lines.txt").st_size == 0:
-            js = {}
+            js={}
             js[code] = total_number_of_lines
         else:
             js = json.loads(ans)
@@ -115,18 +105,17 @@ def persist_file_length(list3, code):
     f.close()
 
 
-def main_code(file1_address, file2_address,code):
+def main_code(file1_address, file2_address, code):
     global total_threads
     total_threads += 1
-    narr1, narr2 = read_input(file1_address, file2_address)
-    narr1_time = narr1[:, 23]
-    narr2_time = narr2[:, 23]
-    narr1 = np.delete(narr1, np.s_[23:26], 1)
-    narr2 = np.delete(narr2, np.s_[23:26], 1)
-    narr1 = narr1.tolist()
-    narr2 = narr2.tolist()
-    list3 = core_logic(narr1,narr1_time, narr2, narr2_time)
+    list1 = read_input(file1_address)
+    list2 = read_input(file2_address)
+    if list1 == -1 or list2 == -1:
+        list3 = -1
+    else:
+        sorted_list1 = sorted(list1, key=itemgetter('raw_log_time'))
+        sorted_list2 = sorted(list2, key=itemgetter('raw_log_time'))
+        list3 = core_logic(sorted_list1, sorted_list2)
     list_to_file(list3, code)
     persist_file_length(list3, code)
     total_threads -= 1
-
