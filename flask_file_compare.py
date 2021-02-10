@@ -21,8 +21,8 @@ logger = logging.getLogger()
 def paginate():
     request_body = request.data.decode()
     if request_body == '':
-        logging.warning("please enter the input  body, body is empty")
-        return Response("please enter the input  body, body is empty", status = 500)
+        logging.warning("please enter the input body, body is empty")
+        return Response("please enter the input body, body is empty", status=500)
     try:
         body_input = json.loads(request_body)
     except ValueError:
@@ -91,7 +91,7 @@ def file_comp():
     if body_data == {}:
         logging.warning("both file addresses are missing please enter file1_address and file2_address")
         return Response("both file addresses are missing please enter file1_address and file2_address", status=500)
-    if "file1_address" not in body_data  and "file2_address" not in body_data:
+    if "file1_address" not in body_data and "file2_address" not in body_data:
         logging.warning("please enter file1_address and file2_address")
         return Response("please enter file1_address and file2_address", status=500)
     if "file1_address" not in body_data:
