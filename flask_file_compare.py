@@ -5,16 +5,14 @@ import secrets
 import os.path
 import threading
 import math
-import logging
 from linecache import getline
+import logging
 total_number_of_lines = 0
 application = Flask(__name__)
 per_page = 200
-
 log_format = "%(levelname)s - %(asctime)s - %(message)s"
 logging.basicConfig(filename='./log_file.log', level=logging.INFO, format=log_format)
 logger = logging.getLogger()
-
 
 
 @application.route('/paginate/')
@@ -28,9 +26,9 @@ def paginate():
     except ValueError:
         logging.warning("input not in proper format, input must be a json")
         return Response("input not in proper format, input must be a json", status=500)
-    if body_input == {}:
+    """if body_input == {}:
         logging.warning("Please enter token and page number")
-        return Response("Please enter token and page number", status=500)
+        return Response("Please enter token and page number", status=500)"""
     if "token" not in body_input and "page_number" not in body_input:
         logging.warning("please enter token and page_number")
         return Response("please enter token and page_number", status=500)
@@ -58,12 +56,12 @@ def paginate():
     global total_number_of_lines
     total_number_of_lines = dictionary[code]
     if total_number_of_lines % per_page == 0:
-        total_number_of_pages = int(total_number_of_lines/per_page) - 1
+        total_number_of_pages = int(total_number_of_lines / per_page) - 1
     else:
-        total_number_of_pages = int(math.floor(total_number_of_lines/per_page))
+        total_number_of_pages = int(math.floor(total_number_of_lines / per_page))
     if num > total_number_of_pages:
-        logging.warning("total number of pages is "+str(total_number_of_pages))
-        return Response("total number of pages is "+str(total_number_of_pages), status=500)
+        logging.warning("total number of pages is " + str(total_number_of_pages))
+        return Response("total number of pages is " + str(total_number_of_pages), status=500)
     start_page = num * per_page
     output = []
     for i in range(per_page):
@@ -88,9 +86,9 @@ def file_comp():
     except ValueError:
         logging.warning("input not in proper format, input must be a json")
         return Response("input not in proper format, input must be a json", status=500)
-    if body_data == {}:
+    """if body_data == {}:
         logging.warning("both file addresses are missing please enter file1_address and file2_address")
-        return Response("both file addresses are missing please enter file1_address and file2_address", status=500)
+        return Response("both file addresses are missing please enter file1_address and file2_address", status=500)"""
     if "file1_address" not in body_data and "file2_address" not in body_data:
         logging.warning("please enter file1_address and file2_address")
         return Response("please enter file1_address and file2_address", status=500)

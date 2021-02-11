@@ -2,12 +2,7 @@ import pandas as pd
 import os
 import json
 from operator import itemgetter
-
 total_threads = 0
-
-main_keys = ['id', 'e_type', 'source', 'vendor', 'time', 'raw_log_time', 'evt_order', 'fields']
-field_keys = ['table_name', '-msg-type', 'host', 'db_operation', 'src_ip', 'dest_host', 'database_name', 'app', 'time',
-              'error_code', 'user', 'db_query']
 
 
 def read_input(file_address):
@@ -21,38 +16,44 @@ def read_input(file_address):
     return dict1
 
 
+def sort_input(input_list):
+    try:
+        sorted_list = sorted(input_list, key=itemgetter('raw_log_time'))
+    except KeyError:
+        return -1
+    else:
+        return sorted_list
+
+
 def core_logic(list1, list2):
     list3 = ['\n'] * len(list1)
     list1_len = len(list1)
     first_occur = 0
     list2_index = 0
     last_append = 0
-    try:
-        for second in list2:
-            second_unprocessed = True
-            for first in range(first_occur, list1_len):
-                if second["raw_log_time"] < list1[first]["raw_log_time"]:
+    for second in list2:
+        second_unprocessed = True
+        for first in range(first_occur, list1_len):
+            if second["raw_log_time"] < list1[first]["raw_log_time"]:
+                break
+            else:
+                if list1[first]["raw_log_time"] > list1[first_occur]["raw_log_time"]:
+                    first_occur = first
+                if list1[first] == second:
+                    list3[first] = second
+                    second_unprocessed = False
+                    last_append = first
+                    list1[first]["id"] = "processed"
                     break
-                else:
-                    if list1[first]["raw_log_time"] > list1[first_occur]["raw_log_time"]:
-                        first_occur = first
-                    if list1[first] == second:
-                        list3[first] = second
-                        second_unprocessed = False
-                        last_append = first
-                        list1[first]["id"] = "processed"
-                        break
-            if second_unprocessed:
-                adjust_mismatch(list2, list3, list2_index, second, last_append)
-            list2_index += 1
-            print(list2_index)
-    except KeyError:
-        return "keys are missing from input"
+        if second_unprocessed:
+            adjust_mismatch(list2, list3, list2_index, second, last_append)
+        list2_index += 1
+        print(list2_index)
     return list3
 
 
-def adjust_mismatch(list2, list3, list2Index, second, lastAppend):
-    if (list2Index == len(list2) - 1):  # if we encounter last element of list2
+def adjust_mismatch(list2, list3, list2_index, second, last_append):
+    if (list2_index == len(list2) - 1):  # if we encounter last element of list2
 
         if list3[len(list3) - 1] == '\n':  # if in list3 last value blank then push the o/p there
             ans_str = str(second)
@@ -63,17 +64,17 @@ def adjust_mismatch(list2, list3, list2Index, second, lastAppend):
 
     else:
         while True:
-            if lastAppend == (len(list3) - 1):
+            if last_append == (len(list3) - 1):
                 ans_str = str(second)
                 list3.append(ans_str + '<mismatch>')
-                lastAppend += 1
+                last_append += 1
                 break
-            if list3[lastAppend] == '\n':
+            if list3[last_append] == '\n':
                 ans_str = str(second)
-                list3[lastAppend] = ans_str + '<mismatch>'
-                lastAppend += 1
+                list3[last_append] = ans_str + '<mismatch>'
+                last_append += 1
                 break
-            lastAppend += 1
+            last_append += 1
 
 
 def list_to_file(list3, code):
@@ -124,13 +125,16 @@ def main_code(file1_address, file2_address, code):
             list3 = 'file1 not in proper json format'
         elif list2 == -1:
             list3 = 'file2 not in proper json format'
-
     else:
-        try:
-            sorted_list1 = sorted(list1, key=itemgetter('raw_log_time'))
-            sorted_list2 = sorted(list2, key=itemgetter('raw_log_time'))
-        except KeyError:
-            list3 = 'keys are missing from input'
+        sorted_list1 = sort_input(list1)
+        sorted_list2 = sort_input(list2)
+        if isinstance(sorted_list1, int) or isinstance(sorted_list2, int):
+            if sorted_list1 == -1 and sorted_list2 == -1:
+                list3 = 'raw_log_time missing from both input'
+            elif sorted_list1 == -1:
+                list3 = 'raw_log_time missing from file1'
+            elif sorted_list2 == -2:
+                list3 = 'raw_log_time missing from file2'
         else:
             list3 = core_logic(sorted_list1, sorted_list2)
     list_to_file(list3, code)
