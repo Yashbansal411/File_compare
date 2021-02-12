@@ -46,7 +46,7 @@ def core_logic(list1, list2):
                     list1[first]["id"] = "processed"
                     break
         if second_unprocessed:
-            adjust_mismatch(list2, list3, list2_index, second, last_append)
+            last_append = adjust_mismatch(list2, list3, list2_index, second, last_append)
         list2_index += 1
         print(list2_index)
     return list3
@@ -75,6 +75,7 @@ def adjust_mismatch(list2, list3, list2_index, second, last_append):
                 last_append += 1
                 break
             last_append += 1
+    return last_append
 
 
 def list_to_file(list3, code):

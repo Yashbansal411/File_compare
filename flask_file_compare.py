@@ -26,9 +26,7 @@ def paginate():
     except ValueError:
         logging.warning("input not in proper format, input must be a json")
         return Response("input not in proper format, input must be a json", status=500)
-    """if body_input == {}:
-        logging.warning("Please enter token and page number")
-        return Response("Please enter token and page number", status=500)"""
+
     if "token" not in body_input and "page_number" not in body_input:
         logging.warning("please enter token and page_number")
         return Response("please enter token and page_number", status=500)
@@ -86,9 +84,6 @@ def file_comp():
     except ValueError:
         logging.warning("input not in proper format, input must be a json")
         return Response("input not in proper format, input must be a json", status=500)
-    """if body_data == {}:
-        logging.warning("both file addresses are missing please enter file1_address and file2_address")
-        return Response("both file addresses are missing please enter file1_address and file2_address", status=500)"""
     if "file1_address" not in body_data and "file2_address" not in body_data:
         logging.warning("please enter file1_address and file2_address")
         return Response("please enter file1_address and file2_address", status=500)
