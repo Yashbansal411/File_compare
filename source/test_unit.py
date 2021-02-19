@@ -1,6 +1,7 @@
 import os
 os.system("mkdir output")
 os.system("mkdir output/logs")
+os.system("mkdir number_of_lines")
 import file_compare as file
 import flask_file_compare as flask_code
 import json
@@ -313,3 +314,4 @@ def test_expected_output():
     assert list3 == ['\n', {'id': 324, 'raw_log_time': 11}, '\n', {'id': 326, 'raw_log_time': 13}, "{'id': 328, 'raw_log_time': 15}<mismatch>"]
 
 
+os.system("rm -rf output number_of_lines")

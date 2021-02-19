@@ -14,8 +14,6 @@ RUN mkdir -p /app/output/logs
 
 RUN mkdir -p /app/number_of_lines
 
-#RUN touch /app/number_of_lines/number_of_lines.txt
-
 EXPOSE 5000
 
 ENTRYPOINT ["python3"]

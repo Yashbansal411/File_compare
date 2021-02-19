@@ -104,11 +104,13 @@ def list_to_file(list3, code):
 
 
 def persist_file_length(list3, code):
+    if not os.path.exists('number_of_lines/number_of_lines.txt'):
+        os.system("touch number_of_lines/number_of_lines.txt")
     if isinstance(list3, str):
         total_number_of_lines = 1
     else:
         total_number_of_lines = len(list3)
-    with open("number_of_lines/number_of_lines.txt", 'a+') as f:
+    with open("number_of_lines/number_of_lines.txt") as f:
         ans = ''
         for i in f:
             ans = ans + str(i)
