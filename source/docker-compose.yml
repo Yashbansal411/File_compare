@@ -3,9 +3,9 @@ services:
    api:
        build: .
        ports:
-       - "5000:5000"
-       volumes: 
-       - ../input/:/app/input
-       - ../output/:/app/output
-       - ../output/logs:/app/output/logs
-       - ../output/number_of_lines:/app/number_of_lines
+       - 5000:5000
+       volumes:
+       - ${PATH_OF_SOURCE}/input/:/app/input
+       - ${PATH_OF_SOURCE}/output/:/app/output
+       - ${PATH_OF_SOURCE}/output/logs:/app/output/logs
+       - ${PATH_OF_SOURCE}/output/number_of_lines:/app/number_of_lines
