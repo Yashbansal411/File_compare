@@ -154,17 +154,14 @@ def test_file_path_exists():
     json_input1 = {"file1_address": "test/file1_10.txt", "file2_address": "test/file2_10.txt"}
     response1 = client.post(url, data=json.dumps(json_input1))
     assert response1.status_code == 500 and response1.get_data() == b'Both files are not present'
-    #open("file1_dummy.txt", 'w')
-    #open("file2_dummy.txt", 'w')
     json_input2 = {"file1_address": "file1_dummy.txt", "file2_address": "file2_dummy.txt"}
     response2 = client.post(url, data=json.dumps(json_input2))
-    #os.remove("file1_dummy.txt")
-    #os.remove("file2_dummy.txt")
     assert response2.status_code == 500 #and response2.get_data() == b'file2 is not present'
     open("file2_10000.txt",'w')
     json_input3 = {"file1_address": "test/file1_10.txt", "file2_address": "file2_10000.txt"}
     response3 = client.post(url, data=json.dumps(json_input3))
     assert response3.status_code == 500 and response3.get_data() == b'file1 is not present'
+    os.remove("file2_10000.txt")
 
 
 def test_token():
