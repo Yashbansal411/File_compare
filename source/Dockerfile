@@ -12,7 +12,7 @@ RUN mkdir -p /app/output
 
 RUN mkdir -p /app/output/logs
 
-RUN mkdir -p /app/number_of_lines
+RUN mkdir -p /app/output/number_of_lines
 
 EXPOSE 5000
 

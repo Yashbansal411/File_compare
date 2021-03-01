@@ -5,7 +5,7 @@ services:
        ports:
        - 5000:5000
        volumes:
-       - ${PATH_OF_SOURCE}/input/:/app/input
-       - ${PATH_OF_SOURCE}/output/:/app/output
-       - ${PATH_OF_SOURCE}/output/logs:/app/output/logs
-       - ${PATH_OF_SOURCE}/output/number_of_lines:/app/number_of_lines
+       - ${PATH_OF_INPUT}/:/app/input
+       - ${PATH_OF_OUTPUT}/:/app/output
+       - ${PATH_OF_OUTPUT}/logs:/app/output/logs
+       - ${PATH_OF_OUTPUT}/number_of_lines:/app/output/number_of_lines

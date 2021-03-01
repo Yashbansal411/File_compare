@@ -14,6 +14,15 @@ log_format = "%(levelname)s - %(asctime)s - %(message)s"
 logging.basicConfig(filename='output/logs/log_file.log', level=logging.INFO, format=log_format)
 logger = logging.getLogger()
 
+def get_file_length(code):
+    f = open('output/'+code+'.txt', 'r')
+    total_lines = 0
+    for i in f:
+        total_lines+=1
+    f.close()
+    file.persist_file_length(total_lines,code)
+    return total_lines
+
 
 @application.route('/paginate/')
 def paginate():
@@ -47,13 +56,19 @@ def paginate():
     if not os.path.exists('output/' + code + '.txt'):
         logging.warning("value enter in the key token is incorrect")
         return Response("please enter the valid token", status=500)
-    with open("number_of_lines/number_of_lines.txt") as f:
+    with open("output/number_of_lines/number_of_lines.txt") as f:
         ans = ""
         for i in f:
             ans = ans + i
         dictionary = json.loads(ans)
     global total_number_of_lines
-    total_number_of_lines = dictionary[code]
+    try:
+        total_number_of_lines = dictionary[code] #can raise exception
+    except KeyError: # key is not present but file is present
+        t2 = threading.Thread(target=get_file_length, args=[code])
+        t2.start()
+        logging.info("Total number of lines of token = "+code+" is not present currently, please wait calculation is in progress")
+        return "Total number of lines of token "+code+" is not present"
     if total_number_of_lines % per_page == 0:
         total_number_of_pages = int(total_number_of_lines / per_page) - 1
     else:

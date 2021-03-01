@@ -80,8 +80,8 @@ def adjust_mismatch(list2, list3, list2_index, second, last_append):
 
 
 def list_to_file(list3, code):
-    #if not os.path.isdir('output'):
-    #    os.mkdir('output')
+    if not os.path.isdir('output'):
+        os.system('mkdir output')
     if isinstance(list3, str): # execute when there is an error in inputs
         f = open('output/' + code + '.txt', 'w')
         f.write(list3)
@@ -104,23 +104,29 @@ def list_to_file(list3, code):
 
 
 def persist_file_length(list3, code):
-    if not os.path.exists('number_of_lines/number_of_lines.txt'):
-        os.system("touch number_of_lines/number_of_lines.txt")
-    if isinstance(list3, str):
+    if not os.path.isdir('output'):
+        os.system('mkdir output')
+    if not os.path.isdir('output/number_of_lines'):
+        os.system('mkdir output/number_of_lines')
+    if not os.path.exists('output/number_of_lines/number_of_lines.txt'):
+        os.system("touch output/number_of_lines/number_of_lines.txt")
+    if isinstance(list3,int):
+        total_number_of_lines = list3
+    elif isinstance(list3, str):
         total_number_of_lines = 1
     else:
         total_number_of_lines = len(list3)
-    with open("number_of_lines/number_of_lines.txt") as f:
+    with open("output/number_of_lines/number_of_lines.txt") as f:
         ans = ''
         for i in f:
             ans = ans + str(i)
-        if os.stat("number_of_lines/number_of_lines.txt").st_size == 0:
+        if os.stat("output/number_of_lines/number_of_lines.txt").st_size == 0:
             js = {}
             js[code] = total_number_of_lines
         else:
             js = json.loads(ans)
             js[str(code)] = total_number_of_lines
-    f = open("number_of_lines/number_of_lines.txt", 'w')
+    f = open("output/number_of_lines/number_of_lines.txt", 'w')
     f.write(str(js).replace("'", '"'))
     f.close()
 

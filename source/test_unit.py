@@ -1,7 +1,8 @@
 import os
 os.system("mkdir output")
 os.system("mkdir output/logs")
-os.system("mkdir number_of_lines")
+os.system("mkdir output/number_of_lines")
+import pytest
 import file_compare as file
 import flask_file_compare as flask_code
 import json
@@ -163,8 +164,12 @@ def test_file_path_exists():
     assert response3.status_code == 500 and response3.get_data() == b'file1 is not present'
     os.remove("file2_10000.txt")
 
-
-def test_token():
+@pytest.mark.order(1)
+def test_token(): #race condition
+    os.system("mkdir output")
+    os.system("mkdir output/logs")
+    os.system("mkdir output/number_of_lines")
+    os.system("touch output/number_of_lines/number_of_lines.txt")
     open("file1.txt", 'w')
     open("file2.txt", 'w')
     client = flask_code.application.test_client()
@@ -174,6 +179,7 @@ def test_token():
     assert response3.status_code == 200
     os.remove("file1.txt")
     os.remove("file2.txt")
+    os.system("rm -rf output")
 
 
 def test_input_body_paginate():
@@ -254,7 +260,7 @@ def test_expected_output():
     list3 = file.core_logic(sorted_list1, sorted_list2)
     assert list3 == ['\n', '\n', {'id': 324, 'raw_log_time': 11}, {'id': 324, 'raw_log_time': 11}, '\n', '\n', {'id': 326, 'raw_log_time': 13}, {'id': 326, 'raw_log_time': 13}, "{'id': 328, 'raw_log_time': 15}<mismatch>", "{'id': 328, 'raw_log_time': 15}<mismatch>"]
 
-    # not get expected output
+  
 
     list1 = [{"id":323, "raw_log_time":10},   #Pune
              {"id": 325, "raw_log_time": 12},  #Maharashrta
@@ -311,4 +317,4 @@ def test_expected_output():
     assert list3 == ['\n', {'id': 324, 'raw_log_time': 11}, '\n', {'id': 326, 'raw_log_time': 13}, "{'id': 328, 'raw_log_time': 15}<mismatch>"]
 
 
-os.system("rm -rf output number_of_lines")
+
