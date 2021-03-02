@@ -7,5 +7,3 @@ services:
        volumes:
        - ${PATH_OF_INPUT}/:/app/input
        - ${PATH_OF_OUTPUT}/:/app/output
-       - ${PATH_OF_OUTPUT}/logs:/app/output/logs
-       - ${PATH_OF_OUTPUT}/number_of_lines:/app/output/number_of_lines

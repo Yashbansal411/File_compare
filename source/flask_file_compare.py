@@ -11,6 +11,7 @@ total_number_of_lines = 0
 application = Flask(__name__)
 per_page = 200
 log_format = "%(levelname)s - %(asctime)s - %(message)s"
+
 logging.basicConfig(filename='output/logs/log_file.log', level=logging.INFO, format=log_format)
 logger = logging.getLogger()
 
@@ -111,8 +112,8 @@ def file_comp():
     if "file2_address" not in body_data:
         logging.warning("in input body key file2_address is missing")
         return Response("file2 address is missing", status=500)
-    file1_address = body_data["file1_address"]
-    file2_address = body_data["file2_address"]
+    file1_address = "input/"+body_data["file1_address"]
+    file2_address = "input/"+body_data["file2_address"]
     if os.path.exists(file1_address) is False and os.path.exists(file2_address) is False:
         logging.warning("file address entered in the value of both keys i.e. file1_address and file2_address is "
                         "not exist")
