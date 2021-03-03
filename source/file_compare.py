@@ -6,15 +6,35 @@ import shutil
 total_threads = 0
 
 
+def replace_single_quotes_with_double_quotes(file_address):
+    temp_file = open("input/temp_file.txt", 'w')
+    print("inside new function")
+    with open(file_address) as main_file:
+        for line in main_file:
+            line = line.replace("'", '"')
+            temp_file.write(line)
+    temp_file.close()
+    os.remove(file_address)
+    os.rename("input/temp_file.txt", file_address)
+
+
 def read_input(file_address):
     df1 = pd.read_json(file_address, orient='records', lines=True, chunksize=10000)
+    print("read json done")
     try:
         input1 = df1.read()
-    except ValueError:
-        return -1
+    except ValueError: #if raise error then try to convert single_quotes to double quotes
+        replace_single_quotes_with_double_quotes(file_address)
+        df1 = pd.read_json(file_address, orient='records', lines=True, chunksize=10000)
+        print("new function done")
+        try :
+            input1 = df1.read()
+        except ValueError:
+            return -1
     dict1 = input1.to_dict('records')
     del input1
     return dict1
+
 
 
 def sort_input(input_list):
