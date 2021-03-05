@@ -3,6 +3,7 @@ import os
 import json
 from operator import itemgetter
 import shutil
+import ast
 total_threads = 0
 
 
@@ -12,7 +13,12 @@ def replace_single_quotes_with_double_quotes(file_address):
     with open(file_address) as main_file:
         for line in main_file:
             line = line.replace("'", '"')
-            temp_file.write(line)
+            try:
+                line = str(ast.literal_eval(line))
+            except SyntaxError:
+                continue
+            line = line.replace("'", '"')
+            temp_file.write(line + '\n')
     temp_file.close()
     os.remove(file_address)
     os.rename("input/temp_file.txt", file_address)
@@ -23,18 +29,17 @@ def read_input(file_address):
     print("read json done")
     try:
         input1 = df1.read()
-    except ValueError: #if raise error then try to convert single_quotes to double quotes
+    except ValueError:  # if raise error then try to convert single_quotes to double quotes
         replace_single_quotes_with_double_quotes(file_address)
         df1 = pd.read_json(file_address, orient='records', lines=True, chunksize=10000)
         print("new function done")
-        try :
+        try:
             input1 = df1.read()
         except ValueError:
             return -1
     dict1 = input1.to_dict('records')
     del input1
     return dict1
-
 
 
 def sort_input(input_list):
