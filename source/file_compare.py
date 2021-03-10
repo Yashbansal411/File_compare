@@ -1,3 +1,5 @@
+from itertools import chain
+from linecache import getline
 import pandas as pd
 import os
 import json
@@ -5,6 +7,7 @@ from operator import itemgetter
 import shutil
 import ast
 total_threads = 0
+
 
 
 def replace_single_quotes_with_double_quotes(file_address):
@@ -24,7 +27,7 @@ def replace_single_quotes_with_double_quotes(file_address):
     os.rename("input/temp_file.txt", file_address)
 
 
-def read_input(file_address):
+def read_input_json(file_address):
     df1 = pd.read_json(file_address, orient='records', lines=True, chunksize=10000)
     print("read json done")
     try:
@@ -42,7 +45,16 @@ def read_input(file_address):
     return dict1
 
 
-def sort_input(input_list):
+def read_input_text(file_address):
+    object1 = pd.read_csv(file_address, sep='\n', header=None, iterator=True)
+    data_frame1 = object1.read()
+    list1 = data_frame1.values.tolist()
+    sorted_list = sorted(list1, key=lambda l: l[0])
+    list2 = list(chain.from_iterable(sorted_list))
+    return list2
+
+
+def sort_input_json(input_list):
     try:
         sorted_list = sorted(input_list, key=itemgetter('raw_log_time'))
     except KeyError:
@@ -51,7 +63,34 @@ def sort_input(input_list):
         return sorted_list
 
 
-def core_logic(list1, list2):
+def core_logic_text(list1, list2):
+    list3 = ['\n'] * len(list1)
+    list1_len = len(list1)
+    first_occur = 0
+    list2_index = 0
+    last_append = 0
+    for second in list2:
+        second_unprocessed = True
+        for first in range(first_occur, list1_len):
+            if second < list1[first]:
+                break
+            else:
+                if list1[first] > list1[first_occur]:
+                    first_occur = first
+                if list1[first] == second:
+                    list3[first] = second
+                    second_unprocessed = False
+                    last_append = first
+                    list1[first] += "processed"
+                    break
+        if second_unprocessed:
+            last_append = adjust_mismatch(list2, list3, list2_index, second, last_append)
+        list2_index += 1
+        print(list2_index)
+    return list3
+
+
+def core_logic_json(list1, list2):
     list3 = ['\n'] * len(list1)
     list1_len = len(list1)
     first_occur = 0
@@ -107,7 +146,7 @@ def adjust_mismatch(list2, list3, list2_index, second, last_append):
 def list_to_file(list3, code):
     if not os.path.isdir('output'):
         os.system('mkdir output')
-    if isinstance(list3, str): # execute when there is an error in inputs
+    if isinstance(list3, str):  # execute when there is an error in inputs
         f = open('output/' + code + '.txt', 'w')
         f.write(list3)
         return list3
@@ -135,7 +174,7 @@ def persist_file_length(list3, code):
         os.system('mkdir output/number_of_lines')
     if not os.path.exists('output/number_of_lines/number_of_lines.txt'):
         os.system("touch output/number_of_lines/number_of_lines.txt")
-    if isinstance(list3,int):
+    if isinstance(list3, int):
         total_number_of_lines = list3
     elif isinstance(list3, str):
         total_number_of_lines = 1
@@ -156,12 +195,10 @@ def persist_file_length(list3, code):
     f.close()
 
 
-def main_code(file1_address, file2_address, code):
-    global total_threads
-    total_threads += 1
-    list1 = read_input(file1_address)
-    list2 = read_input(file2_address)
-    if isinstance(list1, int) or isinstance(list2, int):  # check if any inputs are not in json or key missing
+def for_json_only(file1_address, file2_address, code):
+    list1 = read_input_json(file1_address)
+    list2 = read_input_json(file2_address)
+    if isinstance(list1, int) or isinstance(list2, int):
         if list1 == -1 and list2 == -1:
             list3 = 'both inputs are not in proper json format'
         elif list1 == -1:
@@ -169,8 +206,8 @@ def main_code(file1_address, file2_address, code):
         elif list2 == -1:
             list3 = 'file2 not in proper json format'
     else:
-        sorted_list1 = sort_input(list1)
-        sorted_list2 = sort_input(list2)
+        sorted_list1 = sort_input_json(list1)
+        sorted_list2 = sort_input_json(list2)
         if isinstance(sorted_list1, int) or isinstance(sorted_list2, int):
             if sorted_list1 == -1 and sorted_list2 == -1:
                 list3 = 'raw_log_time missing from both input'
@@ -179,7 +216,42 @@ def main_code(file1_address, file2_address, code):
             elif sorted_list2 == -2:
                 list3 = 'raw_log_time missing from file2'
         else:
-            list3 = core_logic(sorted_list1, sorted_list2)
+            list3 = core_logic_json(sorted_list1, sorted_list2)
     list3 = list_to_file(list3, code)
     persist_file_length(list3, code)
+
+
+def for_text_only(file1_address, file2_address, code):
+    sorted_list1 = read_input_text(file1_address)
+    sorted_list2 = read_input_text(file2_address)
+    list3 = core_logic_text(sorted_list1, sorted_list2)
+    list3 = list_to_file(list3, code)
+    persist_file_length(list3, code)
+
+
+def main_code(file1_address, file2_address, code):
+    global total_threads
+    total_threads += 1
+    is_json = False
+    for i in range(5):
+        line1 = getline(file1_address, i + 1)
+        line2 = getline(file2_address, i + 1)
+        try:
+            json.loads(line1)
+        except ValueError:
+            continue
+        try:
+            json.loads(line2)
+        except ValueError:
+            continue
+        is_json = True
+
+    if is_json is True:
+        for_json_only(file1_address, file2_address, code)
+    else:
+        for_text_only(file1_address, file2_address, code)
+    """
+    if input contain json then run for_json_only
+    else call for_text_only
+    """
     total_threads -= 1

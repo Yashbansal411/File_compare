@@ -15,7 +15,7 @@ def test_exact_same():
     list2 = [{"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              {"id": "334l", "raw_log_time": 8, "evt_order": 0, "user": "abc"}]
 
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 == [{'id': '333l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      {'id': '334l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'}]
 
@@ -28,7 +28,7 @@ def test_exact_same_list1_greater():
     list2 = [{"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              {"id": "334l", "raw_log_time": 8, "evt_order": 0, "user": "abc"}]
 
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 == [{'id': '333l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      {'id': '334l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      '\n']
@@ -44,7 +44,7 @@ def test_exact_same_list2_greater():
              {"id": "335l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              {"id": "336l", "raw_log_time": 8, "evt_order": 0, "user": "abc"}]  # extra input at last index
 
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 == [{'id': '333l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      {'id': '334l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      {'id': '335l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
@@ -60,7 +60,7 @@ def test_differ():
              {"id": "338l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              {"id": "343l", "raw_log_time": 8, "evt_order": 0, "user": "abc"}]  # different id at last index
 
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 == [{'id': '323l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      '\n',
                      {'id': '338l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
@@ -76,7 +76,7 @@ def test_duplicate():
              {"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              {"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"}]
 
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 == [{'id': '323l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      {'id': '333l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      "{'id': '333l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'}<mismatch>"]
@@ -91,7 +91,7 @@ def test_extra_spaces_between_keys_value_pair():
     list2 = [{"id": "323l",  "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              {"id": "333l", "raw_log_time": 8,  "evt_order": 0, "user": "abc"},
              ]
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 == [{'id': '323l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'},
                      {'id': '333l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'}]
 
@@ -106,7 +106,7 @@ def test_extra_space_between_key_and_value():
     list2 = [{"id": "323l", "raw_log_time": 8, "evt_order": 0, "user":  "abc"},  # extra space between "user" and "abc"
              {"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              ]
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 == [{"id": "323l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
                      {"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
                      ]
@@ -221,7 +221,7 @@ def test_invalid_input():
 def test_key_missing_file_compare():
     list1 = [{"id": "333l", "evt_order": 0, "user": "abc"},
              {"id": "334l", "raw_log_time": 8, "evt_order": 0, "user": "abc"}]
-    output = file.sort_input(list1)
+    output = file.sort_input_json(list1)
     assert output == -1
 
 def test_expected_output():
@@ -229,7 +229,7 @@ def test_expected_output():
              {"id":324, "raw_log_time":11}]
     list2 = [{"id":325, "raw_log_time":12},
              {"id":326, "raw_log_time":13}]
-    list3 = file.core_logic(list1, list2)
+    list3 = file.core_logic_json(list1, list2)
     assert list3 ==["{'id': 325, 'raw_log_time': 12}<mismatch>",
              "{'id': 326, 'raw_log_time': 13}<mismatch>"]
 
@@ -254,10 +254,10 @@ def test_expected_output():
              {"id":328, "raw_log_time":15}] #Kochi
 
     # as inputs are not sorted in term of raw_log_time so sorting need to be done
-    sorted_list1 = file.sort_input(list1)
-    sorted_list2 = file.sort_input(list2)
+    sorted_list1 = file.sort_input_json(list1)
+    sorted_list2 = file.sort_input_json(list2)
 
-    list3 = file.core_logic(sorted_list1, sorted_list2)
+    list3 = file.core_logic_json(sorted_list1, sorted_list2)
     assert list3 == ['\n', '\n', {'id': 324, 'raw_log_time': 11}, {'id': 324, 'raw_log_time': 11}, '\n', '\n', {'id': 326, 'raw_log_time': 13}, {'id': 326, 'raw_log_time': 13}, "{'id': 328, 'raw_log_time': 15}<mismatch>", "{'id': 328, 'raw_log_time': 15}<mismatch>"]
 
   
@@ -276,9 +276,9 @@ def test_expected_output():
              {"id": 329, "raw_log_time": 16},  #kochi2
              {"id": 330, "raw_log_time": 17}   #kochi3
             ]
-    sorted_list1 = file.sort_input(list1)
-    sorted_list2 = file.sort_input(list2)
-    list3 = file.core_logic(sorted_list1, sorted_list2)
+    sorted_list1 = file.sort_input_json(list1)
+    sorted_list2 = file.sort_input_json(list2)
+    list3 = file.core_logic_json(sorted_list1, sorted_list2)
     print(list3)
 
     list1 = [{"id": 323, "raw_log_time": 10},  # Pune
@@ -296,9 +296,9 @@ def test_expected_output():
              {"id": 326, "raw_log_time": 13},  # Delhi
              {"id": 328, "raw_log_time": 15},  # Kochi
              ]
-    sorted_list1 = file.sort_input(list1)
-    sorted_list2 = file.sort_input(list2)
-    list3 = file.core_logic(sorted_list1, sorted_list2)
+    sorted_list1 = file.sort_input_json(list1)
+    sorted_list2 = file.sort_input_json(list2)
+    list3 = file.core_logic_json(sorted_list1, sorted_list2)
     assert list3 == ['\n', '\n', {'id': 324, 'raw_log_time': 11}, '\n', '\n', '\n', {'id': 326, 'raw_log_time': 13}, '\n', '\n', "{'id': 328, 'raw_log_time': 15}<mismatch>"]
 
     list1 = [{"id": 323, "raw_log_time": 10},  # Pune
@@ -311,9 +311,9 @@ def test_expected_output():
              {"id": 326, "raw_log_time": 13},  # Delhi
              {"id": 328, "raw_log_time": 15},  # Kochi
             ]
-    sorted_list1 = file.sort_input(list1)
-    sorted_list2 = file.sort_input(list2)
-    list3 = file.core_logic(sorted_list1, sorted_list2)
+    sorted_list1 = file.sort_input_json(list1)
+    sorted_list2 = file.sort_input_json(list2)
+    list3 = file.core_logic_json(sorted_list1, sorted_list2)
     assert list3 == ['\n', {'id': 324, 'raw_log_time': 11}, '\n', {'id': 326, 'raw_log_time': 13}, "{'id': 328, 'raw_log_time': 15}<mismatch>"]
 
 
