@@ -72,6 +72,8 @@ def core_logic_text(list1, list2):
     for second in list2:
         second_unprocessed = True
         for first in range(first_occur, list1_len):
+            if list1[first] == "already_processed":
+                continue
             if second < list1[first]:
                 break
             else:
@@ -81,7 +83,7 @@ def core_logic_text(list1, list2):
                     list3[first] = second
                     second_unprocessed = False
                     last_append = first
-                    list1[first] += "processed"
+                    list1[first] = "already_processed"
                     break
         if second_unprocessed:
             last_append = adjust_mismatch(list2, list3, list2_index, second, last_append)
@@ -213,7 +215,7 @@ def for_json_only(file1_address, file2_address, code):
                 list3 = 'raw_log_time missing from both input'
             elif sorted_list1 == -1:
                 list3 = 'raw_log_time missing from file1'
-            elif sorted_list2 == -2:
+            elif sorted_list2 == -1:
                 list3 = 'raw_log_time missing from file2'
         else:
             list3 = core_logic_json(sorted_list1, sorted_list2)
@@ -250,8 +252,4 @@ def main_code(file1_address, file2_address, code):
         for_json_only(file1_address, file2_address, code)
     else:
         for_text_only(file1_address, file2_address, code)
-    """
-    if input contain json then run for_json_only
-    else call for_text_only
-    """
     total_threads -= 1
