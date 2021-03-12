@@ -6,13 +6,12 @@ import json
 from operator import itemgetter
 import shutil
 import ast
-total_threads = 0
 
+total_threads = 0
 
 
 def replace_single_quotes_with_double_quotes(file_address):
     temp_file = open("input/temp_file.txt", 'w')
-    print("inside new function")
     with open(file_address) as main_file:
         for line in main_file:
             line = line.replace("'", '"')
@@ -29,13 +28,11 @@ def replace_single_quotes_with_double_quotes(file_address):
 
 def read_input_json(file_address):
     df1 = pd.read_json(file_address, orient='records', lines=True, chunksize=10000)
-    print("read json done")
     try:
         input1 = df1.read()
     except ValueError:  # if raise error then try to convert single_quotes to double quotes
         replace_single_quotes_with_double_quotes(file_address)
         df1 = pd.read_json(file_address, orient='records', lines=True, chunksize=10000)
-        print("new function done")
         try:
             input1 = df1.read()
         except ValueError:
@@ -120,7 +117,7 @@ def core_logic_json(list1, list2):
 
 
 def adjust_mismatch(list2, list3, list2_index, second, last_append):
-    if (list2_index == len(list2) - 1):  # if we encounter last element of list2
+    if list2_index == len(list2) - 1:  # if we encounter last element of list2
 
         if list3[len(list3) - 1] == '\n':  # if in list3 last value blank then push the o/p there
             ans_str = str(second)
@@ -187,8 +184,7 @@ def persist_file_length(list3, code):
         for i in f:
             ans = ans + str(i)
         if os.stat("output/number_of_lines/number_of_lines.txt").st_size == 0:
-            js = {}
-            js[code] = total_number_of_lines
+            js = {code: total_number_of_lines}
         else:
             js = json.loads(ans)
             js[str(code)] = total_number_of_lines
@@ -236,6 +232,8 @@ def main_code(file1_address, file2_address, code):
     total_threads += 1
     is_json = False
     for i in range(5):
+        if is_json:
+            break
         line1 = getline(file1_address, i + 1)
         line2 = getline(file2_address, i + 1)
         try:
@@ -253,3 +251,4 @@ def main_code(file1_address, file2_address, code):
     else:
         for_text_only(file1_address, file2_address, code)
     total_threads -= 1
+    return is_json
