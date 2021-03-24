@@ -26,6 +26,7 @@ def test_exact_same():
     list3 = file.core_logic_text(list1, list2)
     assert list3 == ["Delhi", "Mumbai", "Pune"]
 
+
 def test_exact_same_list1_greater():
     list1 = [{"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
              {"id": "334l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
@@ -42,7 +43,7 @@ def test_exact_same_list1_greater():
     list1 = ["Delhi", "Mumbai", "Pune", "kochi", "Banglore"]
     list2 = ["Delhi", "Mumbai", "Pune"]
     list3 = file.core_logic_text(list1, list2)
-    assert list3 == ["Delhi", "Mumbai", "Pune",'\n', '\n']
+    assert list3 == ["Delhi", "Mumbai", "Pune", '\n', '\n']
 
     list1 = ["Delhi", "Mumbai", "Pune", "kochi", "Banglore"]
     list1.sort()
@@ -50,6 +51,7 @@ def test_exact_same_list1_greater():
     list2.sort()
     list3 = file.core_logic_text(list1, list2)
     assert list3 == ['Banglore', 'Delhi', 'Mumbai', '\n', '\n']
+
 
 def test_exact_same_list2_greater():
     list1 = [{"id": "333l", "raw_log_time": 8, "evt_order": 0, "user": "abc"},
@@ -91,7 +93,7 @@ def test_differ():
                      "{'id': '343l', 'raw_log_time': 8, 'evt_order': 0, 'user': 'abc'}<mismatch>"]
 
     list2 = ["Delhi", "Mumbai", "Kochi", "Kochi2", "Kochi3"]
-    list1 = ["Delhi", "Mumbai","Maharashtra", "Pune", "Kochi"]
+    list1 = ["Delhi", "Mumbai", "Maharashtra", "Pune", "Kochi"]
     list1.sort()
     list2.sort()
     list3 = file.core_logic_text(list1, list2)
@@ -194,14 +196,16 @@ def test_file_path_exists():
     json_input1 = {"file1_address": "file1_10.txt", "file2_address": "file2_10.txt"}
     response1 = client.post(url, data=json.dumps(json_input1))
     assert response1.status_code == 500 and response1.get_data() == b'Both files are not present'
-    json_input2 = {"file1_address": "file1_dummy.txt", "file2_address": "file2_dummy.txt"}
-    response2 = client.post(url, data=json.dumps(json_input2))
-    assert response2.status_code == 500
     open("input/file2_10000.txt", 'w')
     json_input3 = {"file1_address": "file1_10.txt", "file2_address": "file2_10000.txt"}
     response3 = client.post(url, data=json.dumps(json_input3))
     assert response3.status_code == 500 and response3.get_data() == b'file1 is not present'
+    open("input/file1_dummy.txt", 'w')
+    json_input2 = {"file1_address": "file1_dummy.txt", "file2_address": "file2_dummy.txt"}
+    response2 = client.post(url, data=json.dumps(json_input2))
+    assert response2.status_code == 500 and response2.get_data() == b'file2 is not present'
     os.system("rm -rf input")
+
 
 @pytest.mark.order(-1)
 def test_token():  # race condition
@@ -217,10 +221,9 @@ def test_token():  # race condition
     json_input1 = {"file1_address": "file1.txt", "file2_address": "file2.txt"}
     response3 = client.post(url, data=json.dumps(json_input1))
     assert response3.status_code == 200
-    #os.remove("input/file1.txt")
-    #os.remove("input/file2.txt")
     os.system("rm -rf output")
     os.system("rm -rf input")
+
 
 def test_input_body_paginate():
     client = flask_code.application.test_client()
@@ -400,12 +403,12 @@ def test_read_input_json():
     with open("input/file1.txt", 'w') as f:
         f.write("{'id': 324, 'raw_log_time': 11}")
 
-    final_list=file.read_input_json("input/file1.txt")
+    final_list = file.read_input_json("input/file1.txt")
     assert final_list == [{"id": 324, "raw_log_time": 11}]
     with open("input/file1.txt", 'w') as f:
         f.write("input not in json format")
 
-    expected_result=file.read_input_json("input/file1.txt")
+    expected_result = file.read_input_json("input/file1.txt")
     assert expected_result == -1
     os.system("rm -rf input")
 
@@ -416,16 +419,17 @@ def test_read_input_text():
         f.write("B\n")
         f.write("A\n")
     sorted_list = file.read_input_text("input/file1.txt")
-    #expect sorted list
-    assert sorted_list == ["A","B"]
+    # expect sorted list
+    assert sorted_list == ["A", "B"]
     os.system("rm -rf input")
 
 
 def test_sort_input_json():
     list1 = [{"id": 324, "raw_log_time": 11}, {"id": 324, "raw_log_time": 15}, {"id": 324, "raw_log_time": -11}]
     sorted_list = file.sort_input_json(list1)
-    assert sorted_list == [{"id": 324, "raw_log_time": -11}, {"id": 324, "raw_log_time": 11}, {"id": 324, "raw_log_time": 15}]
-    #check if raw_log_time present
+    assert sorted_list == [{"id": 324, "raw_log_time": -11}, {"id": 324, "raw_log_time": 11},
+                           {"id": 324, "raw_log_time": 15}]
+    # check if raw_log_time present
     list1 = [{"id": 324, "raw_log_time": 11}, {"id": 324}, {"id": 324, "raw_log_time": -11}]
     expected_value_minus_one = file.sort_input_json(list1)
     assert expected_value_minus_one == -1
@@ -452,9 +456,9 @@ def test_main_functionality_for_json():
         f2.write('{"id": 330, "raw_log_time": 18}\n')
 
     code = "abc"
-    is_json=file.main_code("input/file1.txt","input/file2.txt", code)
-    #above inputs contains json that's why we expect true
-    assert is_json==True
+    is_json = file.main_code("input/file1.txt", "input/file2.txt", code)
+    # above inputs contains json that's why we expect true
+    assert is_json == True
     os.system("rm -rf input")
 
 
@@ -478,7 +482,35 @@ def test_main_functionality_for_text():
         f2.write('input file contain text6\n')
         f2.write('input file contain text7\n')
 
-    is_json=file.main_code("input/file3.txt","input/file4.txt", code="abc")
-    #as above inputs contains only text so we expect false
-    assert is_json==False
+    is_json = file.main_code("input/file3.txt", "input/file4.txt", code="abc")
+    # as above inputs contains only text so we expect false
+    assert is_json == False
     os.system("rm -rf input")
+
+
+def test_total_number_of_lines():
+    os.system("mkdir output")
+    os.system("mkdir output/number_of_lines")
+    os.system("touch output/number_of_lines/number_of_lines.txt")
+    list3 = ['{"id": 324, "raw_log_time": 1}'] * 200
+    list3 = file.list_to_file(list3, code="testing_file")
+    file.persist_file_length(list3, code="testing_file")
+    client = flask_code.application.test_client()
+    url = '/paginate/'
+    json_input1 = {"token": "testing_file", "page_number": "0"}
+    response1 = client.get(url, data=json.dumps(json_input1))
+    assert response1.status_code == 200
+    json_input1 = {"token": "testing_file", "page_number": "10"}
+    response1 = client.get(url, data=json.dumps(json_input1))
+    assert response1.status_code == 500 and response1.get_data() == b'total number of pages is 0'
+    # now check what if output file is present but information of that file is not present in number_of_lines folder
+    f = open("output/testing_file2.txt", "w")
+    f.write('{"id": 324, "raw_log_time": 1}')
+    f.close()
+    client = flask_code.application.test_client()
+    url = '/paginate/'
+    json_input1 = {"token": "testing_file2", "page_number": "0"}
+    response1 = client.get(url, data=json.dumps(json_input1))
+    os.system("rm -rf output")
+    assert response1.status_code == 500
+

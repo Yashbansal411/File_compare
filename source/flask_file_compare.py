@@ -8,6 +8,8 @@ import math
 from linecache import getline
 import logging
 import traceback
+import sys
+
 
 total_number_of_lines = 0
 application = Flask(__name__)
@@ -100,7 +102,7 @@ def paginate():
         t2.start()
         tb = traceback.format_exc()
         logging.warning(tb)
-        return "Total number of lines of token " + code + " is not present"
+        return Response("Total number of lines of token " + code + " is not present", status=500)
     if total_number_of_lines % per_page == 0:
         total_number_of_pages = int(total_number_of_lines / per_page) - 1
     else:
@@ -110,8 +112,9 @@ def paginate():
             raise ValueError
         except:
             tb = traceback.format_exc()
-            logging.warning(tb+" total number of pages is " + str(total_number_of_pages) + ' page number entered by the user is '
-                                                                                   'greater than the total number of pages')
+            logging.warning(
+                tb + " total number of pages is " + str(total_number_of_pages) + ' page number entered by the user is '
+                                                                                 'greater than the total number of pages')
         return Response("total number of pages is " + str(total_number_of_pages), status=500)
     start_page = num * per_page
     output = []
@@ -121,6 +124,7 @@ def paginate():
         if value == '':
             continue
         else:
+            value = value.replace('\n', '')
             output.append(value)
     return {'output': output}
 
@@ -204,12 +208,14 @@ def file_comp():
             raise ValueError
         except ValueError:
             tb = traceback.format_exc()
-            logging.warning(tb+" 2 processes are already in running state, please wait for sometime")
+            logging.warning(tb + " 2 processes are already in running state, please wait for sometime")
         return Response("2 requests are already processing", status=500)
     t1 = threading.Thread(target=file.main_code, args=[file1_address, file2_address, code])
     t1.start()
+    #file.main_code(file1_address, file2_address, code)
     msg = str({'token': code})
     logging.info(msg)
+    #print(msg, file=sys.stderr)
     return {"token": code}
 
 
