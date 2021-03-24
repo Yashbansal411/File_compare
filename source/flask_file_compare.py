@@ -10,7 +10,6 @@ import logging
 import traceback
 import sys
 
-
 total_number_of_lines = 0
 application = Flask(__name__)
 per_page = 200
@@ -125,6 +124,7 @@ def paginate():
             continue
         else:
             value = value.replace('\n', '')
+            value = value.replace("\\", '')
             output.append(value)
     return {'output': output}
 
@@ -212,10 +212,8 @@ def file_comp():
         return Response("2 requests are already processing", status=500)
     t1 = threading.Thread(target=file.main_code, args=[file1_address, file2_address, code])
     t1.start()
-    #file.main_code(file1_address, file2_address, code)
     msg = str({'token': code})
     logging.info(msg)
-    #print(msg, file=sys.stderr)
     return {"token": code}
 
 

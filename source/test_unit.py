@@ -265,7 +265,7 @@ def test_key_missing_file_compare():
     list1 = [{"id": "333l", "evt_order": 0, "user": "abc"},
              {"id": "334l", "raw_log_time": 8, "evt_order": 0, "user": "abc"}]
     output = file.sort_input_json(list1)
-    assert output == -1
+    assert output is None
 
 
 def test_expected_output():
@@ -399,7 +399,8 @@ def test_replace_single_quotes_with_double_quotes():
 
 
 def test_read_input_json():
-    os.system("mkdir input")
+    if not os.path.isdir("input"):
+        os.system("mkdir input")
     with open("input/file1.txt", 'w') as f:
         f.write("{'id': 324, 'raw_log_time': 11}")
 
@@ -409,7 +410,7 @@ def test_read_input_json():
         f.write("input not in json format")
 
     expected_result = file.read_input_json("input/file1.txt")
-    assert expected_result == -1
+    assert expected_result == "input was not in proper json format"
     os.system("rm -rf input")
 
 
@@ -429,14 +430,15 @@ def test_sort_input_json():
     sorted_list = file.sort_input_json(list1)
     assert sorted_list == [{"id": 324, "raw_log_time": -11}, {"id": 324, "raw_log_time": 11},
                            {"id": 324, "raw_log_time": 15}]
-    # check if raw_log_time present
+    # check if raw_log_time is not present
     list1 = [{"id": 324, "raw_log_time": 11}, {"id": 324}, {"id": 324, "raw_log_time": -11}]
     expected_value_minus_one = file.sort_input_json(list1)
-    assert expected_value_minus_one == -1
+    assert expected_value_minus_one == None
 
 
 def test_main_functionality_for_json():
-    os.system("mkdir input")
+    if not os.path.isdir("inputt"):
+        os.system("mkdir input")
     with open("input/file1.txt", 'w') as f1:
         f1.write('{"id": 324, "raw_log_time": 1}\n')
         f1.write('{"id": 325, "raw_log_time": 111}\n')
@@ -456,14 +458,15 @@ def test_main_functionality_for_json():
         f2.write('{"id": 330, "raw_log_time": 18}\n')
 
     code = "abc"
-    is_json = file.main_code("input/file1.txt", "input/file2.txt", code)
-    # above inputs contains json that's why we expect true
-    assert is_json == True
+    is_text = file.main_code("input/file1.txt", "input/file2.txt", code)
+    # above inputs contains json that's why we expect false
+    assert is_text == False
     os.system("rm -rf input")
 
 
 def test_main_functionality_for_text():
-    os.system("mkdir input")
+    if not os.path.isdir("input"):
+        os.system("mkdir input")
     with open("input/file3.txt", 'w') as f1:
         f1.write('input file contain text\n')
         f1.write('input file contain text2\n')
@@ -482,9 +485,9 @@ def test_main_functionality_for_text():
         f2.write('input file contain text6\n')
         f2.write('input file contain text7\n')
 
-    is_json = file.main_code("input/file3.txt", "input/file4.txt", code="abc")
-    # as above inputs contains only text so we expect false
-    assert is_json == False
+    is_text = file.main_code("input/file3.txt", "input/file4.txt", code="abc")
+    # as above inputs contains only text so we expect true
+    assert is_text == True
     os.system("rm -rf input")
 
 
@@ -513,4 +516,3 @@ def test_total_number_of_lines():
     response1 = client.get(url, data=json.dumps(json_input1))
     os.system("rm -rf output")
     assert response1.status_code == 500
-
